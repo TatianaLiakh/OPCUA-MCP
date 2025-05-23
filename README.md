@@ -1,10 +1,9 @@
-# OPC UA MCP Server Comparison: Python vs NPX
+# OPC UA MCP Server
 
-This document compares the Python-based and NPX-based Model Context Protocol (MCP) servers for OPC UA operations.
 
 ## Overview
 
-Both implementations provide the same core functionality for OPC UA operations through MCP tools, but differ in their implementation approach and deployment model.
+Python and NPX implementations provide the same core functionality for OPC UA operations through MCP tools, but differ in their implementation approach and deployment model.
 
 ## Implementation Languages
 
