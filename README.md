@@ -3,7 +3,7 @@
 
 ## Overview
 
-Python and NPX implementations provide the same core functionality for OPC UA operations through MCP tools, but differ in their implementation approach and deployment model.
+Python and TypeScript implementations provide the same core functionality for OPC UA operations through MCP tools, but differ in their implementation approach and deployment model.
 
 ## Implementation Languages
 
@@ -97,6 +97,8 @@ npm install
 npm run build
 npm start
 ```
+
+**NPM Package**: https://www.npmjs.com/package/opcua-mcp-npx-server
 
 ## Configuration
 
