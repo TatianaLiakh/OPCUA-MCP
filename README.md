@@ -224,6 +224,3 @@ npx opcua-mcp-npx-server
 
 Both can be tested with the same OPC UA server and will provide identical functionality to MCP clients.
 
-## Conclusion
-
-Both implementations provide equivalent functionality with different deployment and runtime characteristics. Choose based on your preferred development environment, deployment requirements, and existing infrastructure. 
