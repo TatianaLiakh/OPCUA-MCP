@@ -6,6 +6,54 @@
 
 Python and TypeScript implementations provide the same core functionality for OPC UA operations through MCP tools, but differ in their implementation approach and deployment model.
 
+
+## Example Usage in Conversation
+
+Once configured, you can ask Claude to perform real-world OPC UA operations:
+
+### Reading Sensor Values
+- "What is the current temperature reading from the reactor vessel?"
+- "Check the pressure level in Tank A"
+- "Read all temperature sensors in the cooling system"
+- "Get the current flow rate on production line B"
+
+### Controlling Equipment
+- "Turn on the conveyor motor"
+- "Set the mixer speed to 80 RPM"
+- "Open valve V-101 to 75% position"
+- "Start the circulation pump"
+- "Set the heating element to 150°C"
+
+### Production Operations
+- "Start production on line 1 with rate 100 units/hour"
+- "Stop all motors in emergency mode"
+- "Initialize the batch reactor with recipe A"
+- "Begin the cleaning cycle for Tank B"
+
+### System Monitoring
+- "Show me all alarm states in the system"
+- "Read all sensor values from the water treatment plant"
+- "Check the status of all pumps and motors"
+- "Get the energy consumption readings"
+
+### Real Example Scenarios
+```
+User: "What's the temperature in reactor R-101?"
+Assistant: I'll read the temperature sensor for reactor R-101.
+Tool call: read_opcua_node with node_id "ns=2;i=11"
+Result: "Reactor R-101 temperature: 87.3°C"
+
+User: "Turn on the main conveyor motor"
+Assistant: I'll start the main conveyor motor for you.
+Tool call: write_opcua_node with node_id "ns=2;i=12" and value "true"
+Result: "Main conveyor motor started successfully"
+
+User: "Set the pump speed to 65%"
+Assistant: I'll adjust the pump speed to 65%.
+Tool call: write_opcua_node with node_id "ns=2;i=13" and value "65"
+Result: "Pump speed set to 65%"
+```
+
 ## Implementation Languages
 
 ### Python Version (`opcua-mcp-server`)
