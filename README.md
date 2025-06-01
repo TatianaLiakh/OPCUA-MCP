@@ -1,5 +1,6 @@
 # OPC UA MCP Server
 
+![OPC UA MCP Server Screenshot](Media/ss.png)
 
 ## Overview
 

@@ -62,10 +62,9 @@ Read the value of a specific OPC UA node.
 **Example:**
 ```json
 {
-  "node_id": "ns=2;i=2"
+  "node_id": "ns=2;i=1"
 }
 ```
-
 ### 2. write_opcua_node
 
 Write a value to a specific OPC UA node.
@@ -77,8 +76,8 @@ Write a value to a specific OPC UA node.
 **Example:**
 ```json
 {
-  "node_id": "ns=2;i=3",
-  "value": "42.5"
+  "node_id": "ns=2;i=2",
+  "value": "75.5"
 }
 ```
 
@@ -92,7 +91,7 @@ Browse the children of a specific OPC UA node.
 **Example:**
 ```json
 {
-  "node_id": "ns=0;i=85"
+  "node_id": "ns=2;i=3"
 }
 ```
 
@@ -106,7 +105,11 @@ Read values from multiple OPC UA nodes in a single request.
 **Example:**
 ```json
 {
-  "node_ids": ["ns=2;i=2", "ns=2;i=3", "ns=2;i=4"]
+  "node_ids": [
+    "ns=2;i=4", 
+    "ns=2;i=5", 
+    "ns=2;i=6"
+  ]
 }
 ```
 
@@ -121,8 +124,8 @@ Write values to multiple OPC UA nodes in a single request.
 ```json
 {
   "nodes_to_write": [
-    {"node_id": "ns=2;i=2", "value": "10.5"},
-    {"node_id": "ns=2;i=3", "value": "active"}
+    {"node_id": "ns=2;i=7", "value": "50"},
+    {"node_id": "ns=2;i=8", "value": "true"}
   ]
 }
 ```
@@ -139,9 +142,9 @@ Call a method on a specific OPC UA object node.
 **Example:**
 ```json
 {
-  "object_node_id": "ns=2;i=1",
-  "method_node_id": "ns=2;i=2",
-  "arguments": ["25.0", "start"]
+  "object_node_id": "ns=2;i=9",
+  "method_node_id": "ns=2;i=10",
+  "arguments": ["25.0", "high_quality"]
 }
 ```
 
@@ -187,13 +190,50 @@ Add to your Claude Desktop configuration file:
 
 ## Example Usage in Conversation
 
-Once configured, you can ask Claude to perform OPC UA operations:
+Once configured, you can ask Claude to perform real-world OPC UA operations:
 
-- "Read the temperature sensor value from node ns=2;i=100"
-- "Set the pump speed to 75% on node ns=2;i=150"
-- "Browse all children of the sensors folder at ns=2;i=200"
-- "Start production with rate 25 units/hour using method call"
-- "Read all sensor values from nodes ns=2;i=100 through ns=2;i=110"
+### Reading Sensor Values
+- "What is the current temperature reading from the reactor vessel?"
+- "Check the pressure level in Tank A"
+- "Read all temperature sensors in the cooling system"
+- "Get the current flow rate on production line B"
+
+### Controlling Equipment
+- "Turn on the conveyor motor"
+- "Set the mixer speed to 80 RPM"
+- "Open valve V-101 to 75% position"
+- "Start the circulation pump"
+- "Set the heating element to 150°C"
+
+### Production Operations
+- "Start production on line 1 with rate 100 units/hour"
+- "Stop all motors in emergency mode"
+- "Initialize the batch reactor with recipe A"
+- "Begin the cleaning cycle for Tank B"
+
+### System Monitoring
+- "Show me all alarm states in the system"
+- "Read all sensor values from the water treatment plant"
+- "Check the status of all pumps and motors"
+- "Get the energy consumption readings"
+
+### Real Example Scenarios
+```
+User: "What's the temperature in reactor R-101?"
+Assistant: I'll read the temperature sensor for reactor R-101.
+Tool call: read_opcua_node with node_id "ns=2;i=11"
+Result: "Reactor R-101 temperature: 87.3°C"
+
+User: "Turn on the main conveyor motor"
+Assistant: I'll start the main conveyor motor for you.
+Tool call: write_opcua_node with node_id "ns=2;i=12" and value "true"
+Result: "Main conveyor motor started successfully"
+
+User: "Set the pump speed to 65%"
+Assistant: I'll adjust the pump speed to 65%.
+Tool call: write_opcua_node with node_id "ns=2;i=13" and value "65"
+Result: "Pump speed set to 65%"
+```
 
 ## Security Considerations
 
@@ -219,11 +259,21 @@ The server provides detailed error messages for:
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
+We welcome contributions to improve the OPC UA MCP NPX Server! 
+
+**Repository**: [https://github.com/midhunxavier/OPCUA-MCP](https://github.com/midhunxavier/OPCUA-MCP)
+
+To contribute:
+
+1. Fork the repository at [https://github.com/midhunxavier/OPCUA-MCP](https://github.com/midhunxavier/OPCUA-MCP)
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
 4. Add tests if applicable
-5. Submit a pull request
+5. Commit your changes (`git commit -m 'Add some amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+Please feel free to open issues for bug reports, feature requests, or questions.
 
 ## License
 
@@ -232,6 +282,7 @@ MIT License - see LICENSE file for details
 ## Support
 
 For issues and questions:
+- Open an issue on [GitHub](https://github.com/midhunxavier/OPCUA-MCP/issues)
 - Check the OPC UA server connectivity
 - Verify node IDs are correct
 - Ensure proper permissions for OPC UA operations
