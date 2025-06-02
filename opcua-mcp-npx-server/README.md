@@ -9,6 +9,7 @@ An NPX-based Model Context Protocol (MCP) server for OPC UA operations. This ser
 - **Browse Node Children**: Explore the OPC UA address space by browsing node children
 - **Call OPC UA Methods**: Execute methods on OPC UA objects with parameters
 - **Batch Operations**: Perform multiple read/write operations in single requests
+- **Get All Variables**: Discover all available variables in the OPC UA server address space
 - **Automatic Type Conversion**: Intelligent conversion of values based on node data types
 - **Connection Management**: Automatic connection handling with graceful disconnection
 
@@ -148,6 +149,21 @@ Call a method on a specific OPC UA object node.
 }
 ```
 
+### 7. get_all_variables
+
+Get all available variables from the OPC UA server, excluding those under the built-in 'Server' object.
+
+**Parameters:**
+- None required
+
+**Example:**
+```json
+{}
+```
+
+**Returns:**
+A comprehensive list of all variables with their properties including name, node ID, object ID, current value, data type, and description.
+
 ## Integration with Cursor/Claude
 
 This server can be integrated with Cursor IDE or Claude Desktop for OPC UA operations. Add the following to your MCP configuration:
@@ -216,6 +232,9 @@ Once configured, you can ask Claude to perform real-world OPC UA operations:
 - "Read all sensor values from the water treatment plant"
 - "Check the status of all pumps and motors"
 - "Get the energy consumption readings"
+- "Discover all available variables in the OPC UA server"
+- "Show me a complete inventory of all sensors and actuators"
+- "List all process variables with their current values"
 
 ### Real Example Scenarios
 ```
@@ -233,6 +252,15 @@ User: "Set the pump speed to 65%"
 Assistant: I'll adjust the pump speed to 65%.
 Tool call: write_opcua_node with node_id "ns=2;i=13" and value "65"
 Result: "Pump speed set to 65%"
+
+User: "Show me all available variables in the system"
+Assistant: I'll get a complete list of all variables in the OPC UA server.
+Tool call: get_all_variables
+Result: "Found 15 variables:
+- Name: Temperature_Sensor_01, NodeID: ns=2;i=101, Value: 87.3°C
+- Name: Pressure_Sensor_01, NodeID: ns=2;i=102, Value: 2.5 bar
+- Name: Flow_Rate_01, NodeID: ns=2;i=103, Value: 125.8 L/min
+..."
 ```
 
 ## Security Considerations

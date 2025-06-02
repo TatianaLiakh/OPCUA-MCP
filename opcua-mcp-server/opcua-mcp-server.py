@@ -5,7 +5,8 @@ from typing import AsyncIterator
 import asyncio
 import os
 from typing import List, Dict, Any
-from opcua import ua # 
+from opcua import ua
+from opcua.ua import NodeClass
 
 server_url = os.getenv("OPCUA_SERVER_URL", "opc.tcp://localhost:4840")
 
@@ -113,7 +114,7 @@ def browse_opcua_node_children(node_id: str, ctx: Context) -> str:
 
 # Tool: Call an OPC UA method
 @mcp.tool()
-def call_opcua_method(object_node_id: str, method_node_id: str, arguments: List[Any] = None, ctx: Context) -> str:
+def call_opcua_method(object_node_id: str, method_node_id: str, ctx: Context, arguments: List[Any] = None) -> str:
     """
     Call a method on a specific OPC UA object node.
 
@@ -122,6 +123,7 @@ def call_opcua_method(object_node_id: str, method_node_id: str, arguments: List[
                              Example: 'ns=2;i=1' for the Methods folder.
         method_node_id (str): The OPC UA node ID of the method to call.
                              Example: 'ns=2;i=2' for StartProduction method.
+        ctx (Context): The context for the request.
         arguments (List[Any], optional): List of arguments to pass to the method.
                                        Arguments will be converted to appropriate OPC UA variants.
 
@@ -235,6 +237,98 @@ def write_multiple_opcua_nodes(nodes_to_write: List[Dict[str, Any]], ctx: Contex
         
     except Exception as e:
         return f"Error writing multiple nodes: {str(e)}"
+
+# Tool: Get all variables information
+@mcp.tool()
+def get_all_variables(ctx: Context) -> str:
+    """
+    Get all available variables from the OPC UA server, excluding those under the built-in 'Server' object.
+    
+    Returns:
+        str: A string representation of all variables with their name, nodeid, object_id, value, 
+             data_type, and description.
+    """
+    client = ctx.request_context.lifespan_context["opcua_client"]
+    variables_info = []
+    
+    try:
+        objects_node = client.get_objects_node()
+
+        def search_variables(node):
+            try:
+                children = node.get_children()
+            except Exception:
+                return
+
+            for child in children:
+                try:
+                    node_class = child.get_node_class()
+                except Exception:
+                    continue
+
+                # Skip the entire "Server" subtree
+                try:
+                    child_browse_name = child.get_browse_name().Name
+                    if child_browse_name == "Server":
+                        continue
+                except Exception:
+                    continue
+
+                if node_class == NodeClass.Variable:
+                    browse_name = child_browse_name
+                    node_id = child.nodeid.to_string()
+                    
+                    try:
+                        parent_node = child.get_parent()
+                        object_id = parent_node.nodeid.to_string() if parent_node else "N/A"
+                    except Exception:
+                        object_id = "N/A"
+
+                    try:
+                        value = child.get_value()
+                    except Exception:
+                        value = None
+
+                    try:
+                        data_type = child.get_data_type().to_string()
+                    except Exception:
+                        data_type = ""
+
+                    try:
+                        desc = child.get_description().Text
+                    except Exception:
+                        desc = ""
+                    
+                    variables_info.append({
+                        "name": browse_name,
+                        "nodeid": node_id,
+                        "object_id": object_id,
+                        "value": value,
+                        "data_type": data_type,
+                        "description": desc
+                    })
+                elif node_class == NodeClass.Object:
+                    # Recursively search children of this object,
+                    # unless it is the "Server" object
+                    search_variables(child)
+
+        search_variables(objects_node)
+        
+        if variables_info:
+            result = f"Found {len(variables_info)} variables:\n"
+            for var in variables_info:
+                result += f"\n- Name: {var['name']}\n"
+                result += f"  NodeID: {var['nodeid']}\n"
+                result += f"  Object ID: {var['object_id']}\n"
+                result += f"  Value: {var['value']}\n"
+                result += f"  Data Type: {var['data_type']}\n"
+                result += f"  Description: {var['description']}\n"
+            return result
+        else:
+            return "No variables found in the OPC UA server."
+            
+    except Exception as e:
+        return f"Error while finding variables: {str(e)}"
 
 # Run the server
 if __name__ == "__main__":

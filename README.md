@@ -35,6 +35,8 @@ Once configured, you can ask Claude to perform real-world OPC UA operations:
 - "Read all sensor values from the water treatment plant"
 - "Check the status of all pumps and motors"
 - "Get the energy consumption readings"
+- "Discover all available variables in the OPC UA server"
+- "Show me a complete inventory of all sensors and actuators"
 
 ### Real Example Scenarios
 ```
@@ -52,6 +54,15 @@ User: "Set the pump speed to 65%"
 Assistant: I'll adjust the pump speed to 65%.
 Tool call: write_opcua_node with node_id "ns=2;i=13" and value "65"
 Result: "Pump speed set to 65%"
+
+User: "Show me all available variables in the system"
+Assistant: I'll get a complete list of all variables in the OPC UA server.
+Tool call: get_all_variables
+Result: "Found 15 variables:
+- Name: Temperature_Sensor_01, NodeID: ns=2;i=101, Value: 87.3°C
+- Name: Pressure_Sensor_01, NodeID: ns=2;i=102, Value: 2.5 bar
+- Name: Flow_Rate_01, NodeID: ns=2;i=103, Value: 125.8 L/min
+..."
 ```
 
 ## Implementation Languages
@@ -80,6 +91,7 @@ Result: "Pump speed set to 65%"
 | Call OPC UA Methods | ✅ | ✅ | Both support parameter conversion |
 | Read Multiple Nodes | ✅ | ✅ | Batch read operations |
 | Write Multiple Nodes | ✅ | ✅ | Batch write operations |
+| Get All Variables | ✅ | ✅ | Discover all variables in server address space |
 | Connection Management | ✅ | ✅ | Both handle lifecycle automatically |
 | Error Handling | ✅ | ✅ | Comprehensive error reporting |
 | Type Conversion | ✅ | ✅ | Automatic data type conversion |
@@ -117,6 +129,11 @@ Result: "Pump speed set to 65%"
    - Call a method on an OPC UA object
    - Parameters: `object_node_id`, `method_node_id`, `arguments` (optional)
    - Returns: Method execution result
+
+7. **`get_all_variables`**
+   - Get all available variables from the OPC UA server
+   - Parameters: None
+   - Returns: Comprehensive list of all variables with their properties (name, node ID, value, data type, description)
 
 ## Deployment & Installation
 

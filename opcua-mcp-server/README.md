@@ -21,6 +21,7 @@ This MCP server acts as a bridge between AI assistants and OPC UA servers, allow
 - **`call_opcua_method`** - Execute OPC UA methods on server objects
 - **`read_multiple_opcua_nodes`** - Batch read multiple nodes in a single operation
 - **`write_multiple_opcua_nodes`** - Batch write to multiple nodes efficiently
+- **`get_all_variables`** - Retrieve all available variables from the OPC UA server with their metadata
 
 ### Key Capabilities
 
@@ -125,6 +126,8 @@ Once configured, you can ask Claude to perform real-world OPC UA operations:
 - "Read all sensor values from the water treatment plant"
 - "Check the status of all pumps and motors"
 - "Get the energy consumption readings"
+- "What variables are available on this OPC UA server?"
+- "Show me all sensors and their current values"
 
 ### Real Example Scenarios
 ```
@@ -142,6 +145,16 @@ User: "Set the pump speed to 65%"
 Assistant: I'll adjust the pump speed to 65%.
 Tool call: write_opcua_node with node_id "ns=2;i=13" and value "65"
 Result: "Pump speed set to 65%"
+
+User: "What variables are available on this OPC UA server?"
+Assistant: I'll retrieve all available variables from the OPC UA server.
+Tool call: get_all_variables
+Result: Found 5 variables:
+- Temperature (ns=2;i=2): 25.3°C - Temperature sensor
+- Pressure (ns=2;i=3): 5.0 bar - Pressure sensor  
+- MotorSpeed (ns=2;i=4): 1500 RPM - Motor speed
+- MotorState (ns=2;i=5): True - Motor ON/OFF state
+- ValvePosition (ns=2;i=6): False - Valve OPEN/CLOSED position
 ```
 
 ## API Reference
@@ -160,74 +173,14 @@ read_multiple_opcua_nodes(node_ids=["ns=2;i=3", "ns=2;i=4", "ns=2;i=5"])
 # Returns: Multiple node read results with all values
 ```
 
-### Writing Data
-
-**Write to a single node:**
+**Get all variables:**
 ```python
-write_opcua_node(node_id="ns=2;i=10", value="1500")
-# Returns: "Successfully wrote 1500 to node ns=2;i=10"
-```
-
-**Write to multiple nodes:**
-```python
-write_multiple_opcua_nodes(
-    nodes_to_write=[
-        {"node_id": "ns=2;i=10", "value": "1500"},
-        {"node_id": "ns=2;i=12", "value": "true"}
-    ]
-)
-```
-
-### Browsing Nodes
-
-**Explore node hierarchy:**
-```python
-browse_opcua_node_children(node_id="ns=0;i=85")  # Objects folder
-browse_opcua_node_children(node_id="ns=2;i=2")   # Sensors folder
-```
-
-### Method Calls
-
-**Execute OPC UA methods:**
-```python
-call_opcua_method(
-    object_node_id="ns=2;i=27",
-    method_node_id="ns=2;i=28",
-    arguments=["param1", "param2"]
-)
-```
-
-## Node ID Format
-
-OPC UA node IDs follow the format: `ns=<namespace>;i=<identifier>`
-
-- `ns`: Namespace index (0 for standard OPC UA, 2+ for custom)
-- `i`: Numeric identifier within the namespace
-
-**Examples:**
-- `ns=0;i=85` - Objects folder (standard)
-- `ns=2;i=3` - Temperature sensor (custom)
-- `ns=2;i=27` - Methods folder (custom)
-
-## Common Use Cases
-
-### Industrial Monitoring
-```python
-# Read temperature from multiple sensors
-read_multiple_opcua_nodes([
-    "ns=2;i=3",  # Temperature
-    "ns=2;i=4",  # Pressure
-    "ns=2;i=6"   # Tank Level
-])
-```
-
-### Process Control
-```python
-# Set motor speed and valve position
-write_multiple_opcua_nodes([
-    {"node_id": "ns=2;i=10", "value": "1200"},  # Motor speed
-    {"node_id": "ns=2;i=13", "value": "50"}     # Valve position
-])
+get_all_variables()
+# Returns: Complete list of all variables with their metadata including:
+# - Name, NodeID, Object ID, Current Value, Data Type, Description
+# Example output:
+# - Name: Temperature, NodeID: ns=2;i=2, Value: 25.3, Data Type: i=11, Description: Temperature sensor (°C)
+# - Name: Pressure, NodeID: ns=2;i=3, Value: 5.0, Data Type: i=11, Description: Pressure sensor (bar)
 ```
 
 ### System Discovery
@@ -237,46 +190,7 @@ browse_opcua_node_children("ns=2;i=2")  # Sensors folder
 
 # Explore available actuators  
 browse_opcua_node_children("ns=2;i=11") # Actuators folder
+
+# Get complete overview of all variables
+get_all_variables()  # Returns all variables with metadata
 ```
-
-## Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `OPCUA_SERVER_URL` | OPC UA server endpoint URL | `opc.tcp://localhost:4840` |
-
-## Error Handling
-
-The server provides detailed error messages for:
-- Connection failures to OPC UA servers
-- Invalid node IDs or missing nodes
-- Type conversion errors during writes
-- Method call failures
-- Network timeouts and communication issues
-
-## Dependencies
-
-- **mcp[cli]** (≥1.9.1) - Model Context Protocol framework
-- **opcua** (≥0.98.13) - OPC UA client library
-- **cryptography** (≥45.0.2) - Security and encryption support
-- **httpx** (≥0.28.1) - HTTP client for additional communication
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## License
-
-This project is open source. Please refer to the license file for details.
-
-## Support
-
-For issues and questions:
-- Check the error messages for debugging information
-- Verify OPC UA server connectivity
-- Ensure proper node ID formatting
-- Review the OPC UA server logs for additional context

@@ -229,6 +229,15 @@ class OPCUAMCPServer {
               },
               required: ["object_node_id", "method_node_id"]
             }
+          },
+          {
+            name: "get_all_variables",
+            description: "Get all available variables from the OPC UA server, excluding those under the built-in 'Server' object",
+            inputSchema: {
+              type: "object",
+              properties: {},
+              required: []
+            }
           }
         ] satisfies Tool[]
       };
@@ -262,6 +271,9 @@ class OPCUAMCPServer {
               args?.method_node_id as string,
               args?.arguments as string[]
             );
+
+          case "get_all_variables":
+            return await this.getAllVariables();
 
           default:
             throw new Error(`Unknown tool: ${name}`);
@@ -546,6 +558,143 @@ class OPCUAMCPServer {
       };
     } catch (error) {
       throw new Error(`Failed to call method ${methodNodeId} on object ${objectNodeId}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  private async getAllVariables() {
+    if (!this.session) {
+      throw new Error("No OPC UA session available");
+    }
+
+    try {
+      const variablesInfo: Array<{
+        name: string;
+        nodeid: string;
+        object_id: string;
+        value: any;
+        data_type: string;
+        description: string;
+      }> = [];
+
+      // Start browsing from the Objects folder (ns=0;i=85)
+      const objectsNodeId = "ns=0;i=85";
+      
+      const searchVariables = async (nodeId: string): Promise<void> => {
+        try {
+          const browseResult = await this.session!.browse(nodeId);
+          
+          if (browseResult.statusCode !== StatusCodes.Good || !browseResult.references) {
+            return;
+          }
+
+          for (const ref of browseResult.references) {
+            try {
+              const childNodeId = ref.nodeId.toString();
+              const browseName = ref.browseName.name;
+              
+              // Skip the entire "Server" subtree
+              if (browseName === "Server") {
+                continue;
+              }
+
+              // Read the node class to determine if it's a variable or object
+              const nodeClassResults = await this.session!.read({
+                nodeId: childNodeId,
+                attributeId: AttributeIds.NodeClass
+              });
+
+              const nodeClass = nodeClassResults.value?.value;
+              
+              if (nodeClass === 2) { // NodeClass.Variable = 2
+                // This is a variable node
+                let value: any;
+                let dataType = "";
+                let description = "";
+                let objectId = nodeId;
+
+                try {
+                  const valueResult = await this.session!.readVariableValue(childNodeId);
+                  value = valueResult.value?.value;
+                } catch {
+                  value = null;
+                }
+
+                try {
+                  const dataTypeResults = await this.session!.read({
+                    nodeId: childNodeId,
+                    attributeId: AttributeIds.DataType
+                  });
+                  dataType = dataTypeResults.value?.value?.toString() || "";
+                } catch {
+                  dataType = "";
+                }
+
+                try {
+                  const descResults = await this.session!.read({
+                    nodeId: childNodeId,
+                    attributeId: AttributeIds.Description
+                  });
+                  description = descResults.value?.value?.text || "";
+                } catch {
+                  description = "";
+                }
+
+                variablesInfo.push({
+                  name: browseName || "",
+                  nodeid: childNodeId,
+                  object_id: objectId,
+                  value: value,
+                  data_type: dataType,
+                  description: description
+                });
+              } else if (nodeClass === 1) { // NodeClass.Object = 1
+                // This is an object node, recursively search its children
+                await searchVariables(childNodeId);
+              }
+            } catch (error) {
+              // Continue with next reference if this one fails
+              console.error(`Error processing reference: ${error}`);
+            }
+          }
+        } catch (error) {
+          // Continue if browse fails for this node
+          console.error(`Error browsing node ${nodeId}: ${error}`);
+        }
+      };
+
+      await searchVariables(objectsNodeId);
+
+      if (variablesInfo.length > 0) {
+        let result = `Found ${variablesInfo.length} variables:\n`;
+        for (const variable of variablesInfo) {
+          result += `\n- Name: ${variable.name}\n`;
+          result += `  NodeID: ${variable.nodeid}\n`;
+          result += `  Object ID: ${variable.object_id}\n`;
+          result += `  Value: ${variable.value}\n`;
+          result += `  Data Type: ${variable.data_type}\n`;
+          result += `  Description: ${variable.description}\n`;
+        }
+        
+        return {
+          content: [
+            {
+              type: "text",
+              text: result
+            }
+          ]
+        };
+      } else {
+        return {
+          content: [
+            {
+              type: "text",
+              text: "No variables found in the OPC UA server."
+            }
+          ]
+        };
+      }
+    } catch (error) {
+      throw new Error(`Failed to get all variables: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
