@@ -137,7 +137,7 @@ Result: "Found 15 variables:
 
 ## Deployment & Installation
 
-### Python Version
+### Python Version (>=3.13)
 ```bash
 # Installation
 cd opcua-mcp-server
