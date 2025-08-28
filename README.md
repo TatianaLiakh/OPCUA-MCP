@@ -141,7 +141,7 @@ Result: "Found 15 variables:
 ```bash
 # Installation
 cd opcua-mcp-server
-uv install  # or pip install
+uv install  # or pip install .
 
 # Usage
 uv run opcua-mcp-server.py
